@@ -4,7 +4,8 @@ import passport from "passport";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
-
+import fileRoutes from "./routes/file.routes.js";
+import officeRoutes from "./routes/office.routes.js";
 dotenv.config();
 
 const app = express();
@@ -26,7 +27,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 🔹 Routes
-app.use("/auth", authRoutes);
+
+app.use("/api/auth", authRoutes);
+app.use("/api/file", fileRoutes);
+app.use("/api/office", officeRoutes);
 
 // 🔹 Default Route
 app.get("/", (req, res) => {

@@ -7,13 +7,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * Users: supports manual signup + Google OAuth
+ * - role: ADMIN | EMPLOYEE
+ * - googleId optional (for Google accounts)
+ */
 model User {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String?
+  name      String?
+  email     String?  @unique
+  password  String? // hashed password (optional when using Google only)
   role      Role     @default(EMPLOYEE)
   googleId  String?  @unique
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  uploadedFiles WorkFile[]    @relation("uploaderFiles")
+  officeHours   OfficeHours[] @relation("officeCreator")
+}
+
+/**
+ * OfficeHours:
+ * Admin sets office start/end times (HH:MM) — latest entry will be used.
+ */
+model OfficeHours {
+  id          String   @id @default(cuid())
+  officeStart String // format "HH:MM"
+  officeEnd   String // format "HH:MM"
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], name: "officeCreator")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/**
+ * WorkFile: metadata about uploaded file (CSV/XLSX)
+ * - filePath is where file is stored (local path or cloud URL)
+ */
+model WorkFile {
+  id         String   @id @default(cuid())
+  fileName   String
+  filePath   String
+  uploadedBy String?
+  uploader   User?    @relation(fields: [uploadedBy], references: [id], name: "uploaderFiles")
+  isLocked   Boolean  @default(false) // optional manual lock flag
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // relation to rows
+  rows WorkFileRow[]
+}
+
+/**
+ * WorkFileRow: each row extracted from the uploaded file stored as JSON.
+ * - storing rows as JSON gives flexibility for arbitrary CSV/XLS schemas
+ */
+model WorkFileRow {
+  id        String   @id @default(cuid())
+  fileId    String
+  file      WorkFile @relation(fields: [fileId], references: [id])
+  data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
