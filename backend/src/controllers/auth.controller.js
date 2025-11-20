@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import prisma from "../config/prisma.js";
+import prisma from "../prisma/client.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -78,10 +78,19 @@ export const loginUser = async (req, res) => {
 // 🔹 Google Login Callback Handler
 export const googleCallback = async (req, res) => {
   try {
-    const token = generateToken(req.user);
-    res.json({ message: "Google Login successful", token, user: req.user });
+    const user = req.user;
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
+
+    return res.redirect(redirectUrl);
   } catch (error) {
     console.error("Google Callback Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.redirect(`${process.env.FRONTEND_URL}/auth/error`);
   }
 };

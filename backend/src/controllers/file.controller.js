@@ -1,11 +1,11 @@
 import fs from "fs";
 import xlsx from "xlsx";
 import csv from "csv-parser";
-import prisma from "../config/prisma.js";
+import prisma from "../prisma/client.js";
 import { isOfficeClosed } from "../utils/checkOfficeLock.js";
 
 // Save file info in DB
-export const uploadFile = async (req, res) => {
+export const uploadWorkFile = async (req, res) => {
   try {
     if (!req.file)
       return res.status(400).json({ message: "File is required." });

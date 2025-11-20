@@ -34,7 +34,7 @@ app.use("/api/office", officeRoutes);
 
 // 🔹 Default Route
 app.get("/", (req, res) => {
-  res.send("✅ Auth API is running...");
+  res.send("✅ API is running...");
 });
 
 // 🔹 Server Start
